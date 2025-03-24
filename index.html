@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apollo Deception Dataset Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pivotal-blue: #3A82B5;
+  --pivotal-blue-light: #D5E5F2;
+  --pivotal-orange: #F15F22;
+  --pivotal-orange-light: #FADFD3;
+  --pivotal-gray: #4C4D4F;
+  --pivotal-night: #161616;
+  --pivotal-light-gray: #E0E0E0;
+}
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 20px;
+  color: var(--pivotal-night);
+  background-color: white;
+  line-height: 1.6;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--pivotal-light-gray);
+  padding-bottom: 10px;
+}
+h1, h2, h3, h4 {
+  color: var(--pivotal-gray);
+  margin: 0 0 10px 0;
+}
+h1 {
+  font-size: 24px;
+}
+h2 {
+  font-size: 20px;
+}
+h3 {
+  font-size: 18px;
+  margin-top: 15px;
+}
+h4 {
+  font-size: 16px;
+  margin-top: 10px;
+}
+.controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background-color: var(--pivotal-light-gray);
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+select, button, input {
+  padding: 8px 12px;
+  border: 1px solid var(--pivotal-gray);
+  border-radius: 4px;
+  font-family: 'Poppins', sans-serif;
+}
+select {
+  flex-grow: 1;
+  background-color: white;
+}
+button {
+  background-color: var(--pivotal-blue);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+button:hover {
+  background-color: #2e6b96;
+}
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.sample-info {
+  background-color: var(--pivotal-light-gray);
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.score-label {
+  font-weight: 500;
+}
+.honest-score {
+  color: var(--pivotal-blue);
+}
+.deceptive-score {
+  color: var(--pivotal-orange);
+}
+.section-header {
+  border-bottom: 1px solid var(--pivotal-light-gray);
+  padding-bottom: 8px;
+  margin: 25px 0 15px 0;
+}
+.colored-tokens {
+  display: flex;
+  flex-wrap: wrap;
+  white-space: pre-wrap;
+}
+.token {
+  display: inline-block;
+  color: black;
+  line-height: 1em;
+  padding: 3px 0;
+  margin-left: -1px;
+  margin-bottom: 1px;
+  border: 1px solid #eee;
+  position: relative;
+}
+.token:hover::after {
+  content: attr(data-score);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--pivotal-night);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+.header-token {
+  color: #888 !important;
+  font-style: italic;
+}
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+.checkbox-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+}
+.role-break {
+  width: 100%;
+  height: 10px;
+  display: block;
+}
+.dashboard-section {
+  margin-bottom: 25px;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 8px;
+}
+.stat-label {
+  font-weight: 500;
+  color: var(--pivotal-gray);
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.stat-value {
+  font-size: 14px;
+  font-weight: 500;
+}
+.suspicious-region {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.suspicious-region-score {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.token-display {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid var(--pivotal-light-gray);
+  overflow-x: auto;
+  padding: 15px;
+  margin: 15px 0;
+}
+.accordion {
+  margin-top: 20px;
+}
+.accordion-item {
+  margin-bottom: 10px;
+  border: 1px solid var(--pivotal-light-gray);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.accordion-header {
+  padding: 12px 15px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.accordion-content.open {
+  max-height: 2000px;
+  padding: 15px;
+}
+.toggle-icon {
+  transition: transform 0.3s;
+}
+.accordion-header.active .toggle-icon {
+  transform: rotate(180deg);
+}
+.debug-info {
+  font-size: 12px;
+  color: #999;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid var(--pivotal-light-gray);
+}
+.loading {
+  text-align: center;
+  padding: 40px;
+  font-style: italic;
+  color: var(--pivotal-gray);
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Apollo Deception Dataset Viewer</h1>
+    <div>
+      <span class="sample-counter">Sample: <span id="current-sample">0</span> / <span id="total-samples">0</span></span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <select id="dataset-select">
+      <option value="" disabled>Select a dataset</option>
+      <option value="alpaca">Alpaca</option>
+      <option value="ai_liar__original_without_answers" selected>AI Liar (Original)</option>
+      <option value="ai_liar__deception_dilution_100">AI Liar (Deception Dilution)</option>
+      <option value="backdoors_onpolicy_redact">Backdoors (On-Policy Redact)</option>
+      <option value="system_backdoors_w_help">System Backdoors</option>
+      <option value="insider_trading__upscale">Insider Trading</option>
+      <option value="sandbagging_v2__wmdp_mmlu">Sandbagging</option>
+    </select>
+    <button id="probe-toggle">Pairs Probe</button>
+  </div>
+
+  <div class="navigation">
+    <button id="prev-button">&larr; Previous</button>
+    <div>
+      <input type="number" id="sample-jump" min="1" placeholder="Jump to..." style="width: 100px;">
+      <button id="jump-button">Go</button>
+    </div>
+    <button id="next-button">Next &rarr;</button>
+  </div>
+
+  <div class="sample-info">
+    <div>
+      <strong id="dataset-name-display">No dataset selected</strong> sample <span id="sample-id">-</span>
+    </div>
+    <div>
+      Score: <span id="avg-score" class="score-label">-</span>, Label: <span id="sample-label">-</span>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <!-- 1. Conversation Section -->
+  <h2 class="section-header">Conversation</h2>
+  <div class="controls-row">
+    <div class="checkbox-control">
+      <input class="checkbox-input" type="checkbox" id="maskToggle" checked>
+      <label for="maskToggle">Show scores for assistant tokens only</label>
+    </div>
+    <div class="checkbox-control">
+      <input class="checkbox-input" type="checkbox" id="showSystemToggle">
+      <label for="showSystemToggle">Show system prompt</label>
+    </div>
+  </div>
+  <div id="tokens-display" class="token-display"></div>
+
+  <!-- 2. Analysis Dashboard Section -->
+  <h2 class="section-header">Analysis Dashboard</h2>
+  <div class="dashboard-section">
+    <h3>Statistical Summary</h3>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">Average Score</div>
+        <div id="avg-deception-score" class="stat-value">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Median Score</div>
+        <div id="median-score" class="stat-value">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Peak Score</div>
+        <div id="peak-score" class="stat-value">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Tokens > 2.0</div>
+        <div id="high-tokens-2" class="stat-value">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Tokens > 1.0</div>
+        <div id="high-tokens-1" class="stat-value">-</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total Tokens</div>
+        <div id="total-tokens" class="stat-value">-</div>
+      </div>
+    </div>
+
+    <!-- Suspicious Regions -->
+    <h3>Most Deceptive Regions</h3>
+    <div id="suspicious-regions">
+      <!-- Will be filled dynamically -->
+    </div>
+  </div>
+
+  <!-- 3. Cross-examination Section -->
+  <h2 class="section-header">Cross-examinations</h2>
+  <div id="follow-ups-container" class="accordion">
+    <!-- Will be filled dynamically with accordion items -->
+  </div>
+  
+  <div id="debug-info" class="debug-info"></div>
+</div>
+
+<script>
+// Global variables
+let currentDataset = null;
+let samples = [];
+let currentSampleIndex = 0;
+let currentProbe = 'pairs_probe';
+let assistantOnly = true;
+let showSystem = false;
+
+// Elements
+const datasetSelect = document.getElementById('dataset-select');
+const tokensDisplay = document.getElementById('tokens-display');
+const prevButton = document.getElementById('prev-button');
+const nextButton = document.getElementById('next-button');
+const jumpButton = document.getElementById('jump-button');
+const sampleJump = document.getElementById('sample-jump');
+const currentSampleSpan = document.getElementById('current-sample');
+const totalSamplesSpan = document.getElementById('total-samples');
+const datasetNameDisplay = document.getElementById('dataset-name-display');
+const sampleIdSpan = document.getElementById('sample-id');
+const sampleLabelSpan = document.getElementById('sample-label');
+const avgScoreSpan = document.getElementById('avg-score');
+const probeToggle = document.getElementById('probe-toggle');
+const maskToggle = document.getElementById('maskToggle');
+const showSystemToggle = document.getElementById('showSystemToggle');
+const debugInfo = document.getElementById('debug-info');
+const followUpsContainer = document.getElementById('follow-ups-container');
+const suspiciousRegionsDiv = document.getElementById('suspicious-regions');
+
+// Dashboard statistics elements
+const avgDeceptionScore = document.getElementById('avg-deception-score');
+const medianScore = document.getElementById('median-score');
+const peakScore = document.getElementById('peak-score');
+const highTokens2 = document.getElementById('high-tokens-2');
+const highTokens1 = document.getElementById('high-tokens-1');
+const totalTokens = document.getElementById('total-tokens');
+
+// Event listeners
+datasetSelect.addEventListener('change', loadDataset);
+prevButton.addEventListener('click', showPreviousSample);
+nextButton.addEventListener('click', showNextSample);
+jumpButton.addEventListener('click', jumpToSample);
+sampleJump.addEventListener('keydown', function(event) {
+  if (event.key === 'Enter') {
+    jumpToSample();
+  }
+});
+probeToggle.addEventListener('click', toggleProbe);
+maskToggle.addEventListener('change', function() {
+  assistantOnly = this.checked;
+  if (samples.length > 0) {
+    displaySample(currentSampleIndex);
+  }
+});
+showSystemToggle.addEventListener('change', function() {
+  showSystem = this.checked;
+  if (samples.length > 0) {
+    displaySample(currentSampleIndex);
+  }
+});
+
+// Load default dataset on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Select and load AI Liar dataset by default
+  loadDataset();
+});
+
+// Functions
+function toggleProbe() {
+  currentProbe = currentProbe === 'pairs_probe' ? 'rp_probe' : 'pairs_probe';
+  probeToggle.textContent = currentProbe === 'pairs_probe' ? 'Pairs Probe' : 'RP Probe';
+  if (samples.length > 0) {
+    displaySample(currentSampleIndex);
+  }
+}
+
+async function loadDataset() {
+  // Get selected dataset, default to AI Liar if none selected
+  const selectedDataset = datasetSelect.value || 'ai_liar__original_without_answers';
+  
+  tokensDisplay.innerHTML = '<div class="loading">Loading dataset...</div>';
+  currentDataset = selectedDataset;
+  
+  // Format dataset name for display
+  const datasetName = selectedDataset
+    .replace(/__/g, ' - ')
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+  
+  datasetNameDisplay.textContent = datasetName;
+  
+  try {
+    // Use the consolidated dataset path
+    const response = await fetch(`../datasets/apollo_deception_consolidated/${selectedDataset}.jsonl`);
+    if (!response.ok) {
+      throw new Error(`Failed to load dataset: ${response.statusText}`);
+    }
+    
+    const text = await response.text();
+    // Split by newlines and parse each line as JSON
+    samples = text.trim().split('\n')
+      .map(line => {
+        try {
+          return JSON.parse(line);
+        } catch (e) {
+          console.error('Failed to parse line:', line);
+          return null;
+        }
+      })
+      .filter(sample => sample !== null);
+    
+    if (samples.length === 0) {
+      throw new Error("No valid samples found in the dataset");
+    }
+    
+    currentSampleIndex = 0;
+    totalSamplesSpan.textContent = samples.length;
+    displaySample(currentSampleIndex);
+  } catch (error) {
+    console.error('Error loading dataset:', error);
+    tokensDisplay.innerHTML = `<div class="error">Error loading dataset: ${error.message}</div>`;
+  }
+}
+
+function showPreviousSample() {
+  if (currentSampleIndex > 0) {
+    currentSampleIndex--;
+    displaySample(currentSampleIndex);
+  }
+}
+
+function showNextSample() {
+  if (currentSampleIndex < samples.length - 1) {
+    currentSampleIndex++;
+    displaySample(currentSampleIndex);
+  }
+}
+
+function jumpToSample() {
+  const targetIndex = parseInt(sampleJump.value) - 1;
+  if (!isNaN(targetIndex) && targetIndex >= 0 && targetIndex < samples.length) {
+    currentSampleIndex = targetIndex;
+    displaySample(currentSampleIndex);
+  }
+}
+
+function getTokenColor(score) {
+  // Define the gradient colors
+  const honestColor = {r: 58, g: 130, b: 181};  // #3A82B5 - Pivotal Blue
+  const deceptiveColor = {r: 241, g: 95, b: 34}; // #F15F22 - Pivotal Orange
+  const neutralColor = {r: 255, g: 255, b: 255}; // White for neutral
+  
+  // Define the color interpolation function
+  function interpolateColor(color1, color2, factor) {
+    return {
+      r: Math.round(color1.r + factor * (color2.r - color1.r)),
+      g: Math.round(color1.g + factor * (color2.g - color1.g)),
+      b: Math.round(color1.b + factor * (color2.b - color1.b))
+    };
+  }
+  
+  let resultColor;
+  let textColor = 'black';
+  
+  // Map score to color using a smooth gradient
+  if (score < 0) {
+    // Honest score (blue)
+    // Map score from -10..0 to 0..1
+    const factor = Math.min(Math.abs(score) / 10, 1);
+    resultColor = interpolateColor(neutralColor, honestColor, factor);
+    // For very honest scores, use white text
+    if (factor > 0.7) textColor = 'white';
+  } else {
+    // Deceptive score (orange)
+    // Map score from 0..10 to 0..1
+    const factor = Math.min(score / 10, 1);
+    resultColor = interpolateColor(neutralColor, deceptiveColor, factor);
+    // For very deceptive scores, use white text
+    if (factor > 0.7) textColor = 'white';
+  }
+  
+  return {
+    bgColor: `rgb(${resultColor.r}, ${resultColor.g}, ${resultColor.b})`,
+    textColor: textColor
+  };
+}
+
+// Analyze the conversation to determine token roles
+function analyzeConversation(tokens) {
+  // Create arrays to track what each token is
+  const tokenRoles = new Array(tokens.length).fill('unknown');
+  const isHeader = new Array(tokens.length).fill(false);
+  const isContent = new Array(tokens.length).fill(false);
+  
+  // Track conversation state
+  let currentState = 'none';  // none, in_header, in_system, in_user, in_assistant
+  let headerStartIndex = -1;
+  let currentRole = null;
+  
+  // Process tokens sequentially
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    if (token === '<|start_header_id|>') {
+      // Start of a header
+      currentState = 'in_header';
+      headerStartIndex = i;
+      isHeader[i] = true;
+    }
+    else if (currentState === 'in_header' && i === headerStartIndex + 1) {
+      // Role token right after start_header_id
+      isHeader[i] = true;
+      // Store the role we're seeing
+      if (token === 'system') {
+        currentRole = 'system';
+      }
+      else if (token === 'user') {
+        currentRole = 'user';
+      }
+      else if (token === 'assistant') {
+        currentRole = 'assistant';
+      }
+      tokenRoles[i] = token; // Store the role token
+    }
+    else if (token === '<|end_header_id|>') {
+      // End of a header
+      isHeader[i] = true;
+      // Determine which content type we're entering
+      if (currentRole) {
+        currentState = 'in_' + currentRole;
+      }
+    }
+    else if (token === '<|eot_id|>') {
+      // End of text - reset state
+      isHeader[i] = true;
+      currentState = 'none';
+      currentRole = null;
+    }
+    else if (token === '<|begin_of_text|>') {
+      // Special token
+      isHeader[i] = true;
+    }
+    else {
+      // Not a header token
+      // Set role based on current state
+      if (currentState === 'in_system') {
+        tokenRoles[i] = 'system';
+        isContent[i] = true;
+      }
+      else if (currentState === 'in_user') {
+        tokenRoles[i] = 'user';
+        isContent[i] = true;
+      }
+      else if (currentState === 'in_assistant') {
+        tokenRoles[i] = 'assistant';
+        isContent[i] = true;
+      }
+      else if (currentState === 'in_header') {
+        isHeader[i] = true;
+      }
+    }
+  }
+  
+  return { tokenRoles, isHeader, isContent };
+}
+
+function displaySample(index) {
+  if (!samples || samples.length === 0) return;
+  
+  const sample = samples[index];
+  currentSampleIndex = index;
+  currentSampleSpan.textContent = index + 1;
+  sampleJump.value = '';
+  
+  // Update sample ID and label
+  sampleIdSpan.textContent = index + 1;
+  sampleLabelSpan.textContent = sample.label || '-';
+  sampleLabelSpan.style.color = sample.label === 'deceptive' ? 'var(--pivotal-orange)' : 'var(--pivotal-blue)';
+  
+  // Get tokens and probe scores
+  const tokens = sample.tokens || [];
+  const probeScores = sample.probe_scores ? sample.probe_scores[currentProbe] || [] : [];
+  
+  // Calculate average score and update dashboard stats
+  if (probeScores.length > 0) {
+    const avgScore = probeScores.reduce((sum, score) => sum + score, 0) / probeScores.length;
+    avgScoreSpan.textContent = avgScore.toFixed(2);
+    avgScoreSpan.className = avgScore > 0 ? 'deceptive-score' : 'honest-score';
+    
+    // Update dashboard statistics
+    updateDashboardStats(tokens, probeScores);
+    
+    // Analyze the conversation
+    const { tokenRoles, isHeader, isContent } = analyzeConversation(tokens);
+    
+    // Create HTML with colored tokens
+    tokensDisplay.innerHTML = renderTokens(tokens, probeScores, tokenRoles, isHeader, isContent);
+    
+    // Debug information
+    const systemCount = tokenRoles.filter(role => role === 'system').length;
+    const userCount = tokenRoles.filter(role => role === 'user').length;
+    const assistantCount = tokenRoles.filter(role => role === 'assistant').length;
+    const headerCount = isHeader.filter(Boolean).length;
+    const assistantContentCount = isContent.filter((content, idx) => content && tokenRoles[idx] === 'assistant').length;
+    
+    debugInfo.textContent = `Found ${assistantContentCount} assistant content tokens (headers: ${headerCount}, system: ${systemCount}, user: ${userCount}, assistant: ${assistantCount})`;
+    
+    // Update follow-ups section
+    updateFollowUps(sample);
+  } else {
+    tokensDisplay.innerHTML = 'No tokens or scores available for this sample.';
+  }
+}
+
+function updateDashboardStats(tokens, probeScores) {
+  // Calculate statistics
+  const avg = probeScores.reduce((sum, score) => sum + score, 0) / probeScores.length;
+  
+  // Sort scores for median and percentiles
+  const sortedScores = [...probeScores].sort((a, b) => a - b);
+  const median = sortedScores[Math.floor(sortedScores.length / 2)];
+  const max = Math.max(...probeScores);
+  
+  // Count tokens above thresholds
+  const tokensAbove2 = probeScores.filter(score => score > 2.0).length;
+  const tokensAbove1 = probeScores.filter(score => score > 1.0).length;
+  
+  // Calculate percentages
+  const pctAbove2 = ((tokensAbove2 / probeScores.length) * 100).toFixed(1);
+  const pctAbove1 = ((tokensAbove1 / probeScores.length) * 100).toFixed(1);
+  
+  // Update the dashboard
+  avgDeceptionScore.textContent = avg.toFixed(2);
+  avgDeceptionScore.className = avg > 0 ? 'deceptive-score' : 'honest-score';
+  
+  medianScore.textContent = median.toFixed(2);
+  medianScore.className = median > 0 ? 'deceptive-score' : 'honest-score';
+  
+  peakScore.textContent = max.toFixed(2);
+  peakScore.className = max > 0 ? 'deceptive-score' : 'honest-score';
+  
+  highTokens2.textContent = `${tokensAbove2} (${pctAbove2}%)`;
+  highTokens1.textContent = `${tokensAbove1} (${pctAbove1}%)`;
+  totalTokens.textContent = probeScores.length;
+  
+  // Generate suspicious regions (assistant only)
+  updateSuspiciousRegions(tokens, probeScores);
+}
+
+function updateSuspiciousRegions(tokens, probeScores) {
+  suspiciousRegionsDiv.innerHTML = '';
+  
+  // First, analyze the conversation to identify assistant tokens
+  const { tokenRoles, isHeader, isContent } = analyzeConversation(tokens);
+  
+  // Find top suspicious regions with context
+  const contextWindow = 5;  // tokens before/after suspicious token
+  const regionLimit = 5;    // max regions to identify
+  
+  // Create array of indices sorted by score (descending), but only for assistant content tokens
+  const assistantContentIndices = [];
+  for (let i = 0; i < tokens.length; i++) {
+    if (isContent[i] && !isHeader[i] && tokenRoles[i] === 'assistant') {
+      assistantContentIndices.push(i);
+    }
+  }
+  
+  // Sort by score (highest first)
+  assistantContentIndices.sort((a, b) => probeScores[b] - probeScores[a]);
+  
+  // Keep track of which tokens we've already covered in a region
+  const covered = new Set();
+  const suspiciousRegions = [];
+  
+  // Find the top suspicious regions
+  for (const idx of assistantContentIndices) {
+    // Skip if this token is already in a region
+    if (covered.has(idx) || suspiciousRegions.length >= regionLimit) continue;
+    
+    // Skip if score isn't very high
+    if (probeScores[idx] < 1.0) break;
+    
+    // Define region boundaries, but stay within assistant tokens
+    let start = idx, end = idx;
+    let tokensToAdd = contextWindow;
+    
+    // Expand backward within assistant tokens
+    for (let i = idx - 1; i >= 0 && tokensToAdd > 0; i--) {
+      if (isContent[i] && !isHeader[i] && tokenRoles[i] === 'assistant') {
+        start = i;
+        tokensToAdd--;
+      }
+    }
+    
+    // Reset tokens to add
+    tokensToAdd = contextWindow;
+    
+    // Expand forward within assistant tokens
+    for (let i = idx + 1; i < tokens.length && tokensToAdd > 0; i++) {
+      if (isContent[i] && !isHeader[i] && tokenRoles[i] === 'assistant') {
+        end = i;
+        tokensToAdd--;
+      }
+    }
+    
+    // Mark all tokens in this region as covered
+    for (let i = start; i <= end; i++) {
+      covered.add(i);
+    }
+    
+    // Extract the region text and peak score
+    const regionTokens = tokens.slice(start, end + 1);
+    const peakScore = probeScores[idx];
+    
+    // Create a text representation of the region
+    const regionText = regionTokens.map(displayCleaned).join(' ');
+    
+    // Add to regions list
+    suspiciousRegions.push({
+      text: regionText,
+      peakScore: peakScore,
+      index: idx
+    });
+  }
+  
+  // Render the suspicious regions
+  if (suspiciousRegions.length > 0) {
+    // Sort regions by peak score (highest first)
+    suspiciousRegions.sort((a, b) => b.peakScore - a.peakScore);
+    
+    suspiciousRegions.forEach((region, i) => {
+      // Calculate color based on peak score
+      const colorStyle = getTokenColor(region.peakScore);
+      
+      suspiciousRegionsDiv.innerHTML += `
+        <div class="suspicious-region" style="background-color: ${colorStyle.bgColor}; color: ${colorStyle.textColor};">
+          ${region.text}
+          <span class="suspicious-region-score" style="background-color: var(--pivotal-orange);">${region.peakScore.toFixed(2)}</span>
+        </div>
+      `;
+    });
+  } else {
+    suspiciousRegionsDiv.innerHTML = '<p>No significant deceptive regions found in assistant responses.</p>';
+  }
+}
+
+function updateFollowUps(sample) {
+  followUpsContainer.innerHTML = '';
+  
+  // Check if there are follow-ups
+  if (!sample.follow_ups || Object.keys(sample.follow_ups).length === 0) {
+    followUpsContainer.innerHTML = '<p>No cross-examination questions available for this sample.</p>';
+    return;
+  }
+  
+  // Add an accordion item for each follow-up
+  for (const [followUpType, followUpData] of Object.entries(sample.follow_ups)) {
+    // Format the follow-up name for display
+    const displayName = followUpType
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    // Get probe scores and tokens
+    const followUpProbeScores = followUpData.probe_scores[currentProbe] || [];
+    const followUpTokens = followUpData.tokens || [];
+    
+    // Analyze the tokens to find the last assistant message
+    const { tokenRoles, isHeader, isContent } = analyzeConversation(followUpTokens);
+    
+    // Find the last assistant message tokens
+    let lastAssistantStart = -1;
+    let lastAssistantEnd = -1;
+    let inAssistant = false;
+    
+    for (let i = 0; i < followUpTokens.length; i++) {
+      if (tokenRoles[i] === 'assistant' && !isHeader[i]) {
+        if (!inAssistant) {
+          inAssistant = true;
+          lastAssistantStart = i;
+        }
+        lastAssistantEnd = i;
+      } else if (followUpTokens[i] === '<|eot_id|>' && inAssistant) {
+        inAssistant = false;
+      }
+    }
+    
+    // Calculate score for just the last assistant response
+    let finalResponseScore = 0;
+    if (lastAssistantStart >= 0 && lastAssistantEnd >= lastAssistantStart) {
+      const finalResponseScores = followUpProbeScores.slice(lastAssistantStart, lastAssistantEnd + 1);
+      finalResponseScore = finalResponseScores.reduce((sum, score) => sum + score, 0) / finalResponseScores.length;
+    }
+    
+    // Format score for display
+    const scoreClass = finalResponseScore > 0 ? 'deceptive-score' : 'honest-score';
+    
+    // Create accordion item
+    const accordionItem = document.createElement('div');
+    accordionItem.className = 'accordion-item';
+    accordionItem.innerHTML = `
+      <div class="accordion-header" data-follow-up="${followUpType}">
+        <h3>${displayName}</h3>
+        <div>
+          <span class="${scoreClass}">${finalResponseScore.toFixed(2)}</span>
+          <span class="toggle-icon">▼</span>
+        </div>
+      </div>
+      <div class="accordion-content" id="follow-up-content-${followUpType}"></div>
+    `;
+    
+    followUpsContainer.appendChild(accordionItem);
+    
+    // Add event listener to accordion header
+    const header = accordionItem.querySelector('.accordion-header');
+    const content = accordionItem.querySelector('.accordion-content');
+    
+    header.addEventListener('click', function() {
+      // Toggle active class on header
+      this.classList.toggle('active');
+      
+      // Toggle open class on content
+      if (content.classList.contains('open')) {
+        content.classList.remove('open');
+      } else {
+        content.classList.add('open');
+        
+        // Load content if it hasn't been loaded yet
+        if (content.innerHTML.trim() === '') {
+          // Render the tokens
+          content.innerHTML = renderTokens(followUpData.tokens, followUpProbeScores, tokenRoles, isHeader, isContent);
+        }
+      }
+    });
+  }
+}
+
+function renderTokens(tokens, probeScores, tokenRoles, isHeader, isContent) {
+  let html = '<div class="colored-tokens">';
+  let assistantContentCount = 0;
+  let isInHeader = false; // Track if we're in a header section
+  
+  // Group tokens together
+  let headerTokens = [];
+  let contentTokens = [];
+  
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    const role = tokenRoles[i];
+    
+    // Check if we're starting a new section
+    if (token === '<|start_header_id|>') {
+      // If we have content tokens, render them first
+      if (contentTokens.length > 0) {
+        html += renderContentTokens(contentTokens, probeScores);
+        contentTokens = [];
+      }
+      // Start collecting header tokens
+      isInHeader = true;
+      headerTokens.push({ index: i, token });
+    }
+    // Check if we're ending a header section
+    else if (token === '<|end_header_id|>') {
+      // Add this token to header tokens
+      headerTokens.push({ index: i, token });
+      // Render header tokens
+      if (headerTokens.length > 0) {
+        html += renderHeaderTokens(headerTokens, probeScores);
+        headerTokens = [];
+      }
+      // Add a line break
+      html += '<div class="role-break"></div>';
+      isInHeader = false;
+    }
+    // Check if we're at end of a message
+    else if (token === '<|eot_id|>') {
+      // If we have content tokens, render them first
+      if (contentTokens.length > 0) {
+        html += renderContentTokens(contentTokens, probeScores);
+        contentTokens = [];
+      }
+      // Render this token as header
+      html += renderHeaderTokens([{ index: i, token }], probeScores);
+      // Add a line break
+      html += '<div class="role-break"></div>';
+    }
+    // For other tokens
+    else {
+      if (isInHeader || isHeader[i]) {
+        headerTokens.push({ index: i, token });
+      } else {
+        // Content token - hide system tokens if showSystem is false
+        if (role === 'system' && !showSystem) {
+          // Skip system tokens
+          continue;
+        }
+        // Count assistant tokens
+        if (role === 'assistant') {
+          assistantContentCount++;
+        }
+        contentTokens.push({ index: i, token, role });
+      }
+    }
+  }
+  
+  // Render any remaining tokens
+  if (headerTokens.length > 0) {
+    html += renderHeaderTokens(headerTokens, probeScores);
+  }
+  if (contentTokens.length > 0) {
+    html += renderContentTokens(contentTokens, probeScores);
+  }
+  
+  // If system is hidden, add a note
+  if (!showSystem) {
+    html = '<div style="color: #888; margin-bottom: 10px;"><i>System prompt is hidden. Check "Show system prompt" above to view it.</i></div>' + html;
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+function renderHeaderTokens(tokens, probeScores) {
+  let html = '';
+  for (const item of tokens) {
+    const { index, token } = item;
+    const score = probeScores[index];
+    
+    // Get token colors
+    let colors;
+    if (assistantOnly) {
+      // When assistantOnly is on, all header tokens have white backgrounds
+      colors = { bgColor: 'rgb(255, 255, 255)', textColor: '#888' };
+    } else {
+      // Otherwise, use colored backgrounds
+      colors = getTokenColor(score);
+      // But always use gray text for headers
+      colors.textColor = '#888';
+    }
+    
+    // Handle special whitespace characters
+    let displayToken = token;
+    if (token === '\u010a') {
+      displayToken = '\n';
+    } else if (token === '\u010a\u010a') {
+      displayToken = '\n\n';
+    } else if (token.startsWith('\u0120')) {
+      displayToken = ' ' + token.substring(1);
+    }
+    
+    // For readability in HTML, replace literal newlines with <br>
+    if (displayToken === '\n') {
+      displayToken = '<br>';
+    } else if (displayToken === '\n\n') {
+      displayToken = '<br><br>';
+    }
+    
+    // Only use HTML escape for non-HTML tokens
+    const finalToken = (displayToken === '<br>' || displayToken === '<br><br>')
+      ? displayToken
+      : escapeHtml(displayToken);
+    
+    html += `<span><span
+      class="token header-token"
+      style="display: inline-block; background-color: ${colors.bgColor}; color: ${colors.textColor};
+      line-height: 1em; padding: 3px 0px; margin-left: -1px; margin-bottom: 1px;
+      border-width: 1px; border-style: solid; border-color: rgb(238, 238, 238);"
+      data-score="${score !== undefined ? score.toFixed(2) : 'N/A'}"
+    >${finalToken}</span></span>`;
+  }
+  return html;
+}
+
+function renderContentTokens(tokens, probeScores) {
+  let html = '';
+  // Detect which role these content tokens belong to
+  const role = tokens.length > 0 ? tokens[0].role : 'unknown';
+  
+  for (const item of tokens) {
+    const { index, token } = item;
+    const score = probeScores[index];
+    const isAssistant = item.role === 'assistant';
+    
+    // Get token colors
+    let colors;
+    if (assistantOnly) {
+      // When assistantOnly is on, only assistant content tokens get colored
+      if (isAssistant) {
+        colors = getTokenColor(score);
+      } else {
+        colors = { bgColor: 'rgb(255, 255, 255)', textColor: 'black' };
+      }
+    } else {
+      // When assistantOnly is off, all content tokens get colored
+      colors = getTokenColor(score);
+    }
+    
+    // Handle special whitespace characters
+    let displayToken = token;
+    if (token === '\u010a') {
+      displayToken = '\n';
+    } else if (token === '\u010a\u010a') {
+      displayToken = '\n\n';
+    } else if (token.startsWith('\u0120')) {
+      displayToken = ' ' + token.substring(1);
+    }
+    
+    // For readability in HTML, replace literal newlines with <br>
+    if (displayToken === '\n') {
+      displayToken = '<br>';
+    } else if (displayToken === '\n\n') {
+      displayToken = '<br><br>';
+    }
+    
+    // Only use HTML escape for non-HTML tokens
+    const finalToken = (displayToken === '<br>' || displayToken === '<br><br>')
+      ? displayToken
+      : escapeHtml(displayToken);
+    
+    html += `<span><span
+      class="token"
+      style="display: inline-block; background-color: ${colors.bgColor}; color: ${colors.textColor};
+      line-height: 1em; padding: 3px 0px; margin-left: -1px; margin-bottom: 1px;
+      border-width: 1px; border-style: solid; border-color: rgb(238, 238, 238);"
+      data-score="${score !== undefined ? score.toFixed(2) : 'N/A'}"
+      data-role="${item.role}"
+    >${finalToken}</span></span>`;
+  }
+  return html;
+}
+
+function displayCleaned(token) {
+  return token
+    .replace(/\u010a/g, ' ')
+    .replace(/\u0120/g, ' ')
+    .replace(/<\|.*?\|>/g, '')
+    .trim();
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+</script>
+</body>
+</html>
