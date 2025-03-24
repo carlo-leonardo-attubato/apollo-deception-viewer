@@ -16,5 +16,3 @@ An interactive web-based viewer for exploring the Apollo Deception datasets.
 - Identification of suspicious regions in assistant responses
 - Cross-examination analysis with follow-up questions
 - Support for multiple deception datasets
-
-Created by Carlo Leonardo Attubato
