@@ -475,10 +475,32 @@ async function loadDataset() {
   datasetNameDisplay.textContent = datasetName;
   
   try {
-    // Use the consolidated dataset path
-    const response = await fetch(`../datasets/apollo_deception_consolidated/${selectedDataset}.jsonl`);
-    if (!response.ok) {
-      throw new Error(`Failed to load dataset: ${response.statusText}`);
+    // Try multiple paths in case one fails
+    const paths = [
+      `../datasets/apollo_deception_consolidated/${selectedDataset}.jsonl`,  // Relative path (GitHub Pages)
+      `https://media.githubusercontent.com/media/carlo-leonardo-attubato/apollo-deception-viewer/main/datasets/apollo_deception_consolidated/${selectedDataset}.jsonl`  // LFS media URL
+    ];
+    
+    let response = null;
+    let error = null;
+    
+    // Try each path until one works
+    for (const path of paths) {
+      try {
+        const r = await fetch(path);
+        if (r.ok) {
+          response = r;
+          console.log(`Successfully loaded from ${path}`);
+          break;
+        }
+      } catch (e) {
+        error = e;
+        console.log(`Failed to load from ${path}: ${e.message}`);
+      }
+    }
+    
+    if (!response) {
+      throw error || new Error('Failed to load dataset from any path');
     }
     
     const text = await response.text();
@@ -1133,3 +1155,4 @@ function escapeHtml(unsafe) {
 </script>
 </body>
 </html>
+
